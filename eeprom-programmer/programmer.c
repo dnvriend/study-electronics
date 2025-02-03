@@ -28,7 +28,7 @@ void initialize() {
   pinMode(WRITE_EN, OUTPUT);
 }
 
-// Toggle PIN(4) PIN(12) ST_CP on the 74HC595
+// Toggle PIN(4) PIN(12) ST_CP on the 74HC595 
 void toggleLatch() {
   digitalWrite(SHIFT_LATCH, LOW);
   digitalWrite(SHIFT_LATCH, HIGH);
@@ -59,7 +59,7 @@ byte readEEPROM(unsigned int address) {
   setAddress(address, /*outputEnable*/ true);
   byte data = 0;
   for(unsigned int pin=EEPROM_D7; pin >= EEPROM_D0; pin -= 1) {
-    unsigned int bit = digitalRead(pin);
+    unsigned int bit = digitalRead(pin);    
     data = (data << 1) + bit;
   }
   return data;
@@ -93,7 +93,7 @@ void printContents(int max) {
     }
     char buf[80];
     sprintf(buf, "%03x: %02x %02x %02x %02x %02x %02x %02x %02x   %02x %02x %02x %02x %02x %02x %02x %02x",
-      base, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+      base, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], 
       data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]
     );
     Serial.println(buf);
@@ -105,7 +105,7 @@ void printReceivedData(byte data[], unsigned int length) {
     char buf[80];
     sprintf(buf, "%03x:", base);
     Serial.print(buf);
-
+    
     // Print hex values
     for (unsigned int offset = 0; offset < 16 && (base + offset) < length; offset++) {
       sprintf(buf, " %02x", data[base + offset]);
@@ -150,19 +150,19 @@ void loop() {
       while (!Serial.available()) {}
       unsigned int address = Serial.parseInt();
       eraseEEPROM(address);
-      Serial.println("---END---");
+      Serial.println("---END---");     
     }
     else if (command.equalsIgnoreCase("WRITE")) {
       // Wait for the total length value
-      while (!Serial.available()) {}
+      while (!Serial.available()) {}  
       unsigned long lengthFromSerial = Serial.parseInt();
       unsigned int DO_NOT_USE = Serial.read();
       unsigned int totalLength = (unsigned int) lengthFromSerial;
       Serial.println(totalLength);
-
+      
       unsigned int bytesWritten = 0;
       byte buffer[CHUNK_SIZE];
-
+      
       while (bytesWritten < totalLength) {
         unsigned int bytesToRead = min(totalLength - bytesWritten, (unsigned int)CHUNK_SIZE);
         unsigned long startTime = millis();
@@ -176,12 +176,12 @@ void loop() {
           break;
         }
         int count = Serial.readBytes(buffer, bytesToRead);
-
+        
         // Write each byte to EEPROM.
         for (unsigned int i = 0; i < (unsigned int)count; i++) {
           writeEEPROM(bytesWritten + i, buffer[i]);
         }
-        bytesWritten += count;
+        bytesWritten += count;        
         // Signal the PC that we’re ready for the next chunk.
         Serial.println("ACK");
       }
@@ -189,16 +189,16 @@ void loop() {
     }
     else if (command.equalsIgnoreCase("WRITE_BYTE")) {
       // New command: expects an address then a data value (each terminated by newline)
-      while (!Serial.available()) {}
+      while (!Serial.available()) {}  
       unsigned int addr = Serial.parseInt();
-      while (!Serial.available()) {}
+      while (!Serial.available()) {}  
       int data = Serial.parseInt();
       writeEEPROM(addr, (byte)data);
       Serial.println("ACK");
     }
     else if (command.equalsIgnoreCase("READ_BYTE")) {
       // New command: expects an address, then returns the byte at that location.
-      while (!Serial.available()) {}
+      while (!Serial.available()) {}  
       unsigned int addr = Serial.parseInt();
       byte data = readEEPROM(addr);
       // Send back the data in hexadecimal format.
@@ -206,7 +206,7 @@ void loop() {
     }
     else {
       char buf[80];
-      sprintf(buf, "Unknown command: '%s'. Use READ, WRITE, ERASE", command.c_str());
+      sprintf(buf, "Unknown command: '%s'. Use READ, WRITE, ERASE", command.c_str());      
       Serial.println(buf);
     }
   }
